@@ -16,37 +16,50 @@ function transform(arr) {
     throw new Error("'arr' parameter must be an instance of the Array!");
   }
 
-  const commands = new Set([
+  const commands = [
     '--discard-next',
     '--discard-prev',
     '--double-next',
     '--double-prev',
-  ]);
+  ];
 
   const items = arr.map((value) => ({
     value,
-    count: commands.has(value) ? 0 : 1,
-    isCommand: commands.has(value),
+    count: commands.includes(value) ? 0 : 1,
+    isCommand: commands.includes(value),
   }));
 
   arr.forEach((value, index) => {
-    if (!commands.has(value)) {
+    const isDiscardNext = value === '--discard-next';
+    const isDiscardPrev = value === '--discard-prev';
+    const isDoubleNext = value === '--double-next';
+    const isDoublePrev = value === '--double-prev';
+
+    if (
+      !isDiscardNext
+      && !isDiscardPrev
+      && !isDoubleNext
+      && !isDoublePrev
+    ) {
       return;
     }
 
-    const isNextCommand =
-      value === '--discard-next' || value === '--double-next';
+    const targetIndex =
+      isDiscardNext || isDoubleNext
+        ? index + 1
+        : index - 1;
 
-    const targetIndex = isNextCommand ? index + 1 : index - 1;
     const target = items[targetIndex];
 
     if (!target || target.isCommand || target.count === 0) {
       return;
     }
 
-    if (value === '--discard-next' || value === '--discard-prev') {
-      target.count = 0;
-    } else {
+    if (isDiscardNext || isDiscardPrev) {
+      target.count -= 1;
+    }
+
+    if (isDoubleNext || isDoublePrev) {
       target.count += 1;
     }
   });
